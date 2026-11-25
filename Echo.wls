@@ -1,21 +1,21 @@
 #!/usr/bin/env wolframscript
 (* ::Package:: *)
 
-Get["KirillBelov`WebSocket`"]; 
+PacletDirectoryLoad[Directory[]];
+Get["KirillBelov`WebSocket`"];
 
 
-ws = WebSocketServerCreate[8080, <|
-	"Echo" -> Function[True] -> Function[Echo[#2]]
-|>]; 
+server = WebSocketServerCreate[8080, <|
+    "Echo" -> (Function[True] -> Function[{client, message}, message])
+|>];
 
 
-ws["Listener"]
-
-
-conn = WebSocketConnect["ws://localhost:8080"];
-
-
-WebSocketSend[conn, "hello"]
-
-
-Close[ws["Listener"]]; 
+connection = WebSocketConnect["ws://localhost:8080"];
+WebSocketSend[connection, "hello"];
+SocketReadyQ[connection, 1];
+Print[SocketReadMessage[connection]];
+WebSocketSend[connection, ByteArray[{0, 128, 255}]];
+SocketReadyQ[connection, 1];
+Print[SocketReadMessage[connection]];
+Close[connection];
+Close[server];
